@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IdeaForge — Zero-to-One Execution Engine</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f13;--bg2:#16161d;--bg3:#1e1e28;--border:#2a2a38;
+  --text:#e8e8f0;--muted:#8888aa;--accent:#7c6dfa;--accent2:#a78bfa;
+  --green:#34d399;--amber:#fbbf24;--red:#f87171;--blue:#60a5fa;
+  --radius:10px;--radius-lg:16px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;font-size:15px;line-height:1.6}
+
+/* Layout */
+.app{display:grid;grid-template-columns:1fr 420px;min-height:100vh;gap:0}
+@media(max-width:900px){.app{grid-template-columns:1fr}}
+.left{padding:2rem;display:flex;flex-direction:column;gap:1.5rem;border-right:1px solid var(--border)}
+.right{padding:2rem;background:var(--bg2);overflow-y:auto;max-height:100vh;position:sticky;top:0}
+
+/* Header */
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,#7c6dfa,#a78bfa);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-size:1.25rem;font-weight:700;letter-spacing:-0.02em}
+.logo-sub{font-size:12px;color:var(--muted);margin-top:1px}
+
+/* API Key section */
+.api-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem}
+.api-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.api-label{font-size:13px;font-weight:500;color:var(--muted)}
+.api-link{font-size:12px;color:var(--accent2);text-decoration:none;opacity:.8}
+.api-link:hover{opacity:1}
+.api-row{display:flex;gap:8px}
+.api-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;font-family:monospace;outline:none}
+.api-input:focus{border-color:var(--accent)}
+.api-status{font-size:12px;margin-top:6px;color:var(--muted)}
+.api-status.ok{color:var(--green)}
+
+/* Phase stepper */
+.phases{display:flex;gap:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.phase-btn{flex:1;padding:10px 4px;font-size:11px;font-weight:500;text-align:center;background:transparent;border:none;color:var(--muted);cursor:pointer;border-right:1px solid var(--border);transition:all .2s;line-height:1.3}
+.phase-btn:last-child{border-right:none}
+.phase-btn.active{background:var(--accent);color:#fff}
+.phase-btn.done{background:rgba(52,211,153,.12);color:var(--green)}
+.phase-btn.locked{cursor:not-allowed;opacity:.4}
+
+/* Idea input */
+.idea-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem}
+.idea-label{font-size:13px;color:var(--muted);margin-bottom:8px;display:block}
+textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit;resize:vertical;min-height:90px;outline:none;line-height:1.6}
+textarea:focus{border-color:var(--accent)}
+.idea-actions{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.char-count{font-size:12px;color:var(--muted)}
+
+/* Buttons */
+.btn{padding:9px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#6d5ef0}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--muted)}
+.btn-sm{padding:6px 14px;font-size:12px}
+
+/* Conversation area */
+.convo{display:flex;flex-direction:column;gap:12px}
+.msg{border-radius:var(--radius);padding:1rem 1.25rem;font-size:14px;line-height:1.7}
+.msg-ai{background:var(--bg2);border:1px solid var(--border)}
+.msg-user{background:rgba(124,109,250,.1);border:1px solid rgba(124,109,250,.25);text-align:right}
+.msg-phase{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;color:var(--accent2)}
+.msg-loading{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.dot-pulse span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);animation:dp 1.2s ease-in-out infinite}
+.dot-pulse span:nth-child(2){animation-delay:.2s}
+.dot-pulse span:nth-child(3){animation-delay:.4s}
+@keyframes dp{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* Follow-up input */
+.followup{display:flex;gap:8px;margin-top:8px}
+.followup input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none}
+.followup input:focus{border-color:var(--accent)}
+
+/* Canvas (right panel) */
+.canvas-title{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.canvas-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:var(--muted);font-size:13px;text-align:center;gap:8px}
+.canvas-empty .icon{font-size:2rem;opacity:.3}
+
+.canvas-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:10px}
+.canvas-card-title{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.canvas-card-title .dot{width:7px;height:7px;border-radius:50%}
+.dot-clarify{background:#7c6dfa}.dot-assume{background:#f59e0b}.dot-risk{background:#f87171}.dot-mile{background:#34d399}.dot-first{background:#60a5fa}
+
+.compressed-idea{font-size:14px;font-weight:500;color:var(--text);line-height:1.5;padding:8px 0}
+
+.assumption-item{display:flex;gap:8px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.assumption-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.sev-badge{flex-shrink:0;font-size:10px;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.sev-1,.sev-2{background:rgba(52,211,153,.15);color:var(--green)}
+.sev-3{background:rgba(251,191,36,.15);color:var(--amber)}
+.sev-4,.sev-5{background:rgba(248,113,113,.15);color:var(--red)}
+.assumption-text{font-size:13px;color:var(--text);flex:1}
+.assumption-sub{font-size:12px;color:var(--muted);margin-top:3px}
+
+.conf-meter{display:flex;align-items:center;gap:8px;margin-top:6px}
+.conf-label{font-size:11px;color:var(--muted)}
+.conf-bar{flex:1;height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+.conf-fill{height:100%;border-radius:2px;transition:width .5s}
+
+.risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.risk-cell{background:var(--bg2);border-radius:8px;padding:8px 10px;font-size:12px}
+.risk-name{font-weight:500;color:var(--text);margin-bottom:3px}
+.risk-tags{display:flex;gap:4px;flex-wrap:wrap}
+.risk-tag{font-size:10px;padding:2px 7px;border-radius:12px;font-weight:500}
+.tag-impact-h{background:rgba(248,113,113,.15);color:var(--red)}
+.tag-impact-m{background:rgba(251,191,36,.15);color:var(--amber)}
+.tag-impact-l{background:rgba(52,211,153,.15);color:var(--green)}
+
+.milestone-item{display:flex;gap:10px;margin-bottom:8px}
+.mile-num{font-size:11px;font-weight:700;color:var(--accent2);min-width:22px}
+.mile-content{flex:1}
+.mile-name{font-size:13px;font-weight:500;color:var(--text)}
+.mile-dur{font-size:11px;color:var(--muted);margin-bottom:3px}
+.mile-criterion{font-size:12px;color:var(--green);margin-top:4px;padding:4px 8px;background:rgba(52,211,153,.08);border-radius:6px}
+
+.first-step-box{background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:var(--radius);padding:1rem}
+.first-step-action{font-size:14px;font-weight:500;color:var(--blue);line-height:1.5}
+.first-step-meta{font-size:12px;color:var(--muted);margin-top:8px}
+
+.human-box{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:var(--radius);padding:.75rem 1rem;margin-top:8px}
+.human-label{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--amber);margin-bottom:4px}
+.human-text{font-size:12px;color:var(--muted);line-height:1.5}
+
+.copy-btn{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;margin-top:10px}
+.copy-btn:hover{color:var(--text)}
+
+/* Responsible AI banner */
+.rai-banner{background:rgba(124,109,250,.06);border:1px solid rgba(124,109,250,.2);border-radius:var(--radius);padding:.75rem 1rem;font-size:12px;color:var(--muted);line-height:1.5}
+.rai-banner strong{color:var(--accent2)}
+
+/* Reset */
+.reset-row{display:flex;justify-content:flex-end}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- LEFT: Conversation -->
+  <div class="left">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">IdeaForge</div>
+        <div class="logo-sub">Zero-to-One Execution Engine</div>
+      </div>
+    </div>
+
+    <!-- API Key -->
+    <div class="api-section">
+      <div class="api-header">
+        <span class="api-label">Gemini API Key (free)</span>
+        <a class="api-link" href="https://aistudio.google.com/apikey" target="_blank">Get free key →</a>
+      </div>
+      <div class="api-row">
+        <input class="api-input" id="apiKey" type="password" placeholder="AIza..." oninput="checkKey()"/>
+        <button class="btn btn-ghost btn-sm" onclick="toggleKeyVis()">Show</button>
+      </div>
+      <div class="api-status" id="keyStatus">Enter your Gemini API key to begin</div>
+    </div>
+
+    <!-- Phase stepper -->
+    <div class="phases" id="phaseStepper">
+      <button class="phase-btn active" id="pbtn-0" onclick="jumpPhase(0)">1<br>Clarify</button>
+      <button class="phase-btn locked" id="pbtn-1" onclick="jumpPhase(1)">2<br>Assume</button>
+      <button class="phase-btn locked" id="pbtn-2" onclick="jumpPhase(2)">3<br>Risk</button>
+      <button class="phase-btn locked" id="pbtn-3" onclick="jumpPhase(3)">4<br>Milestones</button>
+      <button class="phase-btn locked" id="pbtn-4" onclick="jumpPhase(4)">5<br>First Step</button>
+    </div>
+
+    <!-- Idea input -->
+    <div class="idea-box" id="ideaBox">
+      <label class="idea-label">What idea do you want to execute?</label>
+      <textarea id="ideaInput" maxlength="500" placeholder="e.g. I want to build a peer tutoring marketplace for college students..." oninput="updateChar()"></textarea>
+      <div class="idea-actions">
+        <span class="char-count" id="charCount">0 / 500</span>
+        <button class="btn btn-primary" id="startBtn" onclick="startPhase()" disabled>Start Forging →</button>
+      </div>
+    </div>
+
+    <!-- Responsible AI -->
+    <div class="rai-banner">
+      <strong>Responsible AI:</strong> IdeaForge structures your thinking — it never makes decisions for you. Every output shows confidence. One decision is always reserved for you alone.
+    </div>
+
+    <!-- Conversation -->
+    <div class="convo" id="convo"></div>
+
+    <!-- Follow-up (shown after phase response) -->
+    <div class="followup" id="followupRow" style="display:none">
+      <input id="followupInput" placeholder="Ask a follow-up or press Next Phase →" onkeydown="if(event.key==='Enter')sendFollowup()"/>
+      <button class="btn btn-ghost btn-sm" onclick="sendFollowup()">Ask</button>
+      <button class="btn btn-primary btn-sm" id="nextBtn" onclick="nextPhase()">Next Phase →</button>
+    </div>
+
+    <div class="reset-row" id="resetRow" style="display:none">
+      <button class="btn btn-ghost btn-sm" onclick="resetAll()">↺ Start over</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: Execution Canvas -->
+  <div class="right" id="canvas">
+    <div class="canvas-title">⚡ Execution Canvas</div>
+    <div class="canvas-empty" id="canvasEmpty">
+      <div class="icon">🗺️</div>
+      <div>Your execution plan will<br>build here as you go</div>
+    </div>
+    <div id="canvasContent" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+const PHASES = [
+  {
+    name: "Clarify",
+    instruction: `You are an execution coach. The user has a vague idea. Compress it to ONE crisp sentence: "I am building [X] for [who] to solve [problem]." Ask at most 2 sharp clarifying questions if needed. Be direct and encouraging. Then output a JSON block at the end (after your conversational reply) in this exact format:
+\`\`\`json
+{"compressed_idea":"...","questions":["..."],"confidence":3}
+\`\`\`
+confidence is 1-5. Keep your conversational reply under 80 words.`
+  },
+  {
+    name: "Assume",
+    instruction: `You are a brutal startup advisor. Given the idea, surface the 3 most dangerous hidden assumptions the founder is making. For each: what they're assuming, why it might be dead wrong, how to validate it. Be specific and challenging. Then output JSON at the end:
+\`\`\`json
+{"assumptions":[{"statement":"...","risk_if_wrong":"...","validation":"...","severity":4}]}
+\`\`\`
+severity 1-5 (5 = kills the idea). Keep conversational reply under 100 words.`
+  },
+  {
+    name: "Risk",
+    instruction: `You are a risk analyst. Given the idea and assumptions, identify the top 3 execution risks. Include one risk the user hasn't thought of. Rate each: impact 1-3 (3=fatal), likelihood 1-3 (3=almost certain), include a brief mitigation. Then output JSON:
+\`\`\`json
+{"risks":[{"name":"...","description":"...","impact":2,"likelihood":3,"mitigation":"..."}]}
+\`\`\`
+Keep conversational reply under 80 words.`
+  },
+  {
+    name: "Milestones",
+    instruction: `You are a product manager. Given everything above, generate 3 milestones for the next 90 days. Each must have: a name, duration, 2-3 concrete deliverables, ONE measurable success criterion. Be specific — no vague tasks. Then output JSON:
+\`\`\`json
+{"milestones":[{"name":"...","duration":"30 days","deliverables":["...","..."],"success_criterion":"..."}]}
+\`\`\`
+Keep conversational reply under 80 words.`
+  },
+  {
+    name: "First Step",
+    instruction: `You are an execution coach giving final advice. Given everything above, identify THE ONE THING this person should do in the next 24 hours. It must be: free to do, completable in under 2 hours, and directly validate their riskiest assumption. Then state one important decision the AI cannot make — the human must decide this themselves, and explain why. Output JSON:
+\`\`\`json
+{"first_step":"...","time_estimate":"45 minutes","validates":"assumption #2","human_decision":"...","why_human":"..."}
+\`\`\`
+Keep conversational reply under 100 words.`
+  }
+];
+
+let state = {
+  apiKey: '',
+  idea: '',
+  currentPhase: 0,
+  phasesDone: [],
+  history: [],
+  canvas: {}
+};
+
+function checkKey() {
+  const k = document.getElementById('apiKey').value.trim();
+  state.apiKey = k;
+  const st = document.getElementById('keyStatus');
+  const sb = document.getElementById('startBtn');
+  if (k.startsWith('AIza') && k.length > 20) {
+    st.textContent = '✓ Key looks valid';
+    st.className = 'api-status ok';
+  } else if (k.length > 0) {
+    st.textContent = 'Gemini keys start with AIza...';
+    st.className = 'api-status';
+  } else {
+    st.textContent = 'Enter your Gemini API key to begin';
+    st.className = 'api-status';
+  }
+  updateStartBtn();
+}
+
+function toggleKeyVis() {
+  const i = document.getElementById('apiKey');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+
+function updateChar() {
+  const v = document.getElementById('ideaInput').value;
+  document.getElementById('charCount').textContent = v.length + ' / 500';
+  updateStartBtn();
+}
+
+function updateStartBtn() {
+  const hasKey = state.apiKey.startsWith('AIza') && state.apiKey.length > 20;
+  const hasIdea = document.getElementById('ideaInput').value.trim().length > 10;
+  document.getElementById('startBtn').disabled = !(hasKey && hasIdea);
+}
+
+function jumpPhase(i) {
+  if (!state.phasesDone.includes(i) && i !== state.currentPhase) return;
+}
+
+async function startPhase() {
+  state.idea = document.getElementById('ideaInput').value.trim();
+  document.getElementById('ideaBox').style.display = 'none';
+  state.history = [{role:'user', parts:[{text: 'My idea: ' + state.idea}]}];
+  await runPhase(0);
+}
+
+async function runPhase(phaseIndex) {
+  state.currentPhase = phaseIndex;
+  updateStepper();
+  showLoading(PHASES[phaseIndex].name);
+
+  const sysPrompt = `You are IdeaForge, an AI execution coach helping turn ideas into action plans.\n\nContext: The user's idea is: "${state.idea}"\n\n${PHASES[phaseIndex].instruction}`;
+  
+  const messages = state.history.map(m => ({role: m.role, parts: m.parts}));
+
+  let reply = '';
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${state.apiKey}`,
+      {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          system_instruction: {parts:[{text: sysPrompt}]},
+          contents: messages,
+          generationConfig: {temperature: 0.7, maxOutputTokens: 1200}
+        })
+      }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response received.';
+  } catch(e) {
+    reply = '❌ API error: ' + e.message + '\n\nCheck your API key and try again.';
+  }
+
+  state.history.push({role:'model', parts:[{text: reply}]});
+
+  removeLoading();
+  addMessage('ai', phaseIndex, reply);
+
+  const json = extractJSON(reply);
+  if (json) {
+    updateCanvas(phaseIndex, json);
+    state.phasesDone.push(phaseIndex);
+    updateStepper();
+  }
+
+  document.getElementById('followupRow').style.display = 'flex';
+  document.getElementById('resetRow').style.display = 'flex';
+
+  if (phaseIndex >= 4) {
+    document.getElementById('nextBtn').style.display = 'none';
+  } else {
+    document.getElementById('nextBtn').style.display = 'inline-flex';
+    document.getElementById('nextBtn').textContent = 'Next: ' + PHASES[phaseIndex+1].name + ' →';
+  }
+}
+
+async function sendFollowup() {
+  const inp = document.getElementById('followupInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  addUserMsg(txt);
+  state.history.push({role:'user', parts:[{text: txt}]});
+  showLoading('Thinking');
+
+  const sysPrompt = `You are IdeaForge, an AI execution coach. The user's idea is: "${state.idea}". You are in Phase ${state.currentPhase+1} (${PHASES[state.currentPhase].name}). Answer the follow-up directly and helpfully in under 100 words.`;
+  const messages = state.history.map(m => ({role: m.role, parts: m.parts}));
+
+  let reply = '';
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${state.apiKey}`,
+      {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          system_instruction: {parts:[{text: sysPrompt}]},
+          contents: messages,
+          generationConfig: {temperature: 0.7, maxOutputTokens: 600}
+        })
+      }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response.';
+  } catch(e) {
+    reply = '❌ Error: ' + e.message;
+  }
+  state.history.push({role:'model', parts:[{text: reply}]});
+  removeLoading();
+  addMessage('ai', state.currentPhase, reply);
+}
+
+async function nextPhase() {
+  const next = state.currentPhase + 1;
+  if (next > 4) return;
+  state.history.push({role:'user', parts:[{text: 'Continue to phase ' + (next+1) + ': ' + PHASES[next].name}]});
+  await runPhase(next);
+}
+
+function extractJSON(text) {
+  const m = text.match(/```json\s*([\s\S]*?)```/);
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch(e) { return null; }
+}
+
+function updateStepper() {
+  PHASES.forEach((p, i) => {
+    const btn = document.getElementById('pbtn-'+i);
+    btn.className = 'phase-btn';
+    if (state.phasesDone.includes(i) && i !== state.currentPhase) btn.classList.add('done');
+    else if (i === state.currentPhase) btn.classList.add('active');
+    else if (!state.phasesDone.includes(i-1) && i > 0 && !state.phasesDone.includes(i)) btn.classList.add('locked');
+  });
+}
+
+function showLoading(label) {
+  const c = document.getElementById('convo');
+  const d = document.createElement('div');
+  d.className = 'msg msg-ai msg-loading';
+  d.id = 'loadingMsg';
+  d.innerHTML = `<div class="dot-pulse"><span></span><span></span><span></span></div> <span>${label}...</span>`;
+  c.appendChild(d);
+  d.scrollIntoView({behavior:'smooth'});
+}
+
+function removeLoading() {
+  const l = document.getElementById('loadingMsg');
+  if (l) l.remove();
+}
+
+function addMessage(role, phaseIndex, text) {
+  const c = document.getElementById('convo');
+  const d = document.createElement('div');
+  d.className = 'msg msg-ai';
+  const conversationalPart = text.replace(/```json[\s\S]*?```/g,'').trim();
+  d.innerHTML = `<div class="msg-phase">Phase ${phaseIndex+1} — ${PHASES[phaseIndex].name}</div>${escHtml(conversationalPart).replace(/\n/g,'<br>')}`;
+  c.appendChild(d);
+  d.scrollIntoView({behavior:'smooth'});
+}
+
+function addUserMsg(text) {
+  const c = document.getElementById('convo');
+  const d = document.createElement('div');
+  d.className = 'msg msg-user';
+  d.textContent = text;
+  c.appendChild(d);
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateCanvas(phaseIndex, json) {
+  document.getElementById('canvasEmpty').style.display = 'none';
+  document.getElementById('canvasContent').style.display = 'block';
+  const cc = document.getElementById('canvasContent');
+
+  if (phaseIndex === 0 && json.compressed_idea) {
+    upsertCard(cc, 'clarify', 'clarify', '🎯 Idea — Compressed', `<div class="compressed-idea">"${escHtml(json.compressed_idea)}"</div>${confMeter(json.confidence||3,'Clarity confidence')}`);
+  }
+  if (phaseIndex === 1 && json.assumptions) {
+    const html = json.assumptions.map(a => `
+      <div class="assumption-item">
+        <div class="sev-badge sev-${a.severity}">${a.severity}</div>
+        <div>
+          <div class="assumption-text">${escHtml(a.statement)}</div>
+          <div class="assumption-sub">Risk: ${escHtml(a.risk_if_wrong||'')}</div>
+          <div class="assumption-sub">Validate: ${escHtml(a.validation||'')}</div>
+        </div>
+      </div>`).join('');
+    upsertCard(cc, 'assume', 'assume', '⚠️ Hidden Assumptions', html);
+  }
+  if (phaseIndex === 2 && json.risks) {
+    const html = `<div class="risk-grid">${json.risks.map(r => {
+      const impClass = r.impact===3?'tag-impact-h':r.impact===2?'tag-impact-m':'tag-impact-l';
+      const lkClass = r.likelihood===3?'tag-impact-h':r.likelihood===2?'tag-impact-m':'tag-impact-l';
+      return `<div class="risk-cell"><div class="risk-name">${escHtml(r.name)}</div><div class="risk-tags"><span class="risk-tag ${impClass}">Impact ${r.impact}/3</span><span class="risk-tag ${lkClass}">Likely ${r.likelihood}/3</span></div><div style="font-size:12px;color:var(--muted);margin-top:4px">${escHtml(r.mitigation||'')}</div></div>`;
+    }).join('')}</div>`;
+    upsertCard(cc, 'risk', 'risk', '🔥 Top Risks', html);
+  }
+  if (phaseIndex === 3 && json.milestones) {
+    const html = json.milestones.map((m,i) => `
+      <div class="milestone-item">
+        <div class="mile-num">M${i+1}</div>
+        <div class="mile-content">
+          <div class="mile-name">${escHtml(m.name)}</div>
+          <div class="mile-dur">${escHtml(m.duration)} · ${(m.deliverables||[]).join(' · ')}</div>
+          <div class="mile-criterion">✓ ${escHtml(m.success_criterion||'')}</div>
+        </div>
+      </div>`).join('');
+    upsertCard(cc, 'mile', 'mile', '🗺️ 90-Day Milestones', html);
+  }
+  if (phaseIndex === 4 && json.first_step) {
+    const html = `<div class="first-step-box">
+      <div class="first-step-action">→ ${escHtml(json.first_step)}</div>
+      <div class="first-step-meta">⏱ ${escHtml(json.time_estimate||'')} · Validates: ${escHtml(json.validates||'')}</div>
+    </div>
+    <div class="human-box">
+      <div class="human-label">🤝 Human must decide</div>
+      <div class="human-text"><strong style="color:var(--text)">${escHtml(json.human_decision||'')}</strong><br>${escHtml(json.why_human||'')}</div>
+    </div>
+    <button class="copy-btn" onclick="copyCanvas()">📋 Copy full canvas</button>`;
+    upsertCard(cc, 'first', 'first', '⚡ Your First Step (24h)', html);
+  }
+}
+
+function confMeter(val, label) {
+  const pct = Math.round((val/5)*100);
+  const col = val<=2?'var(--red)':val===3?'var(--amber)':'var(--green)';
+  return `<div class="conf-meter"><span class="conf-label">${label}</span><div class="conf-bar"><div class="conf-fill" style="width:${pct}%;background:${col}"></div></div><span style="font-size:11px;color:${col}">${val}/5</span></div>`;
+}
+
+function upsertCard(container, id, dotClass, title, content) {
+  let card = document.getElementById('canvas-'+id);
+  if (!card) {
+    card = document.createElement('div');
+    card.className = 'canvas-card';
+    card.id = 'canvas-'+id;
+    container.appendChild(card);
+  }
+  card.innerHTML = `<div class="canvas-card-title"><div class="dot dot-${dotClass}"></div>${title}</div>${content}`;
+}
+
+function copyCanvas() {
+  const cards = document.querySelectorAll('.canvas-card');
+  let text = 'IDEAFORGE EXECUTION CANVAS\n\n';
+  cards.forEach(c => { text += c.innerText + '\n\n---\n\n'; });
+  navigator.clipboard.writeText(text).then(() => alert('Canvas copied to clipboard!'));
+}
+
+function resetAll() {
+  state = {apiKey: state.apiKey, idea:'', currentPhase:0, phasesDone:[], history:[], canvas:{}};
+  document.getElementById('ideaBox').style.display = 'block';
+  document.getElementById('ideaInput').value = '';
+  document.getElementById('convo').innerHTML = '';
+  document.getElementById('followupRow').style.display = 'none';
+  document.getElementById('resetRow').style.display = 'none';
+  document.getElementById('canvasEmpty').style.display = 'flex';
+  document.getElementById('canvasContent').style.display = 'none';
+  document.getElementById('canvasContent').innerHTML = '';
+  document.getElementById('charCount').textContent = '0 / 500';
+  PHASES.forEach((_,i) => {
+    const btn = document.getElementById('pbtn-'+i);
+    btn.className = 'phase-btn ' + (i===0?'active':'locked');
+  });
+  updateStartBtn();
+}
+</script>
+</body>
+</html>
