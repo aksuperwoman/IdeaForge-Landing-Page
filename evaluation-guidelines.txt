@@ -1,0 +1,148 @@
+
+
+The submission deadline is June 21 at 11:59 PM ET. Here is exactly what happens after you submit — so you know what to expect and how to give yourself the best chance of advancing.
+
+ 
+
+──────────────────────────────────
+
+ROUND 1 — AUTOMATED SCREENING (June 22)
+
+──────────────────────────────────
+
+Within hours of the submission deadline, every project is scored automatically by an AI evaluator. This is not a human judge — it is a rubric-based AI that ensures all fields are comlete, and reads five specific parts of your Devpost submission and scores them on the same criteria your human judges will use.
+
+The five fields it reads:
+
+• Elevator Pitch
+
+• About the Project
+
+• AI Architecture Explanation
+
+• Human-in-the-Loop Decision
+
+• Responsible AI Guardrail
+
+These are required fields in your Devpost submission. If any are left blank your project will not be scored and will not advance. Please make sure all five are complete before you submit.
+
+ 
+
+What the AI looks for in each field:
+
+• Is the problem real and the user specific — not just "people" or "students"?
+
+• Is AI the right tool, and is the capability named and justified?
+
+• Does the solution have a clear input → AI process → output flow?
+
+• Does the team show where humans stay in control — with a specific handoff point?
+
+• Is there a real risk identified with a concrete design choice that reduces it?
+
+ 
+
+Top-scoring projects from Round 1 advance to Round 2 human judging. The quality threshold is based on score — strong, complete submissions advance. Thin or incomplete submissions do not.
+
+ 
+
+One important note: do not use AI detection tools like ZeroGPT or GPTZero to check your submission. We do not use these tools in our screening process. What matters is the quality of your thinking, not whether a detector flags your writing style. If you used AI to help refine your grammar or vocabulary, that is fine — just disclose it in the AI Tools Used field.
+
+ 
+
+──────────────────────────────────
+
+ROUND 2 — HUMAN JUDGING (June 22–25)
+
+──────────────────────────────────
+
+Teams that advance from Round 1 are assigned to an expert judge from their track. Each judge reviews the full project — your description, your design question responses, and your 3–5 minute demo video — and scores it on five criteria:
+
+ 
+
+• Problem Understanding — is the problem real and clearly explained?
+
+• AI Reasoning — why AI, and is the approach justified?
+
+• Solution Design & Architecture — does the system make sense end to end?
+
+• Impact & Decision Value — what changes for the user because your AI exists?
+
+• Responsible AI & Ethics — did you think seriously about risk and human oversight?
+
+ 
+
+Judges score each criterion from 1 to 5. Scores are combined with your Round 1 AI screening score to produce a final score. The top 10 teams per track advance to the Final Panel.
+
+ 
+
+Your demo video matters here. Judges watch it. A working prototype or clear walkthrough that shows your AI in action makes a real difference at this stage. (Source code in not required)
+
+ 
+
+──────────────────────────────────
+
+ROUND 3 — FINAL PANEL (June 25–26)
+
+──────────────────────────────────
+
+ 
+
+The top 10 teams per track are reviewed by a panel of 5 expert judges. The panel evaluates all 10 finalists and assigns the 5 award categories:
+
+ 
+
+• Grand Prize
+
+• Runner-Up
+
+• Third Place
+
+• Responsible AI Award
+
+• Social Impact Award
+
+ 
+
+All winners are announced at the Global Awards Showcase on June 27 at 10:00 AM ET via livestream.
+
+ 
+
+──────────────────────────────────
+
+HOW TO GIVE YOURSELF THE BEST CHANCE
+
+──────────────────────────────────
+
+ 
+
+1. Answer all five required fields completely — do not leave any blank.
+
+2. Be specific about your user — name who they are and what constraint they face.
+
+3. Name your AI capability — NLP, classification, RAG, recommendation system — and explain why it fits this specific problem.
+
+4. Show a real before/after — what does the user do differently because your AI exists?
+
+5. Identify a real risk specific to your solution — not "AI could be biased" — and show a design choice that reduces it.
+
+6. Record a clear demo video — show the AI working, even if it is a prototype or mockup.
+
+ 
+
+Your qualifier score showed us you can think about AI responsibly. Now show us what you built.
+
+ 
+
+Good luck — we cannot wait to see your projects.
+
+ 
+
+The USAII Hackathon Team
+
+aihackathon@usaii.org | aihackathon.usaii.org
+
+You received this email because you signed up for USAII® Global AI Hackathon 2026. If you're no longer participating, you can unregister here.
+
+© 2026 Devpost, Inc. All rights reserved. Unsubscribe from these notifications
+
