@@ -13,9 +13,10 @@
 
 ## ⚡ TL;DR — Where things stand right now
 
-We are mid-**V1** build. The **backend is ~90% done**; the **frontend (streaming UI) is
-NOT started** and is the next thing to build. There is **no `main.py` or routes yet**
-either — the backend modules exist but aren't wired into a running server.
+**V1 is functionally COMPLETE and pushed to GitHub.** Backend + streaming frontend
+are wired and verified end-to-end (health, session CRUD, SSE format, static serving,
+graceful missing-key handling). The ONLY thing needed for a live demo is a `.env`
+with a real `NVIDIA_API_KEY`.
 
 | Piece | Status | File |
 |---|---|---|
@@ -27,13 +28,17 @@ either — the backend modules exist but aren't wired into a running server.
 | Backend: JSON utils | ✅ Done | `backend/json_utils.py` |
 | Backend: orchestrator (phase runner + retry) | ✅ Done | `backend/orchestrator.py` |
 | Backend: DB models | ✅ Done | `backend/models.py`, `backend/database.py` |
-| **Backend: main.py + routes (forge/sessions/export)** | ❌ **NOT STARTED** | `backend/main.py`, `backend/routes/*.py` |
-| **Frontend: streaming UI** | ❌ **NOT STARTED** | `frontend/index.html`, `frontend/app.css`, `frontend/app.js` |
-| README + run scripts | ❌ Not started | repo root |
-| Tested end-to-end | ❌ Not done | — |
+| Backend: main.py + routes (forge/sessions) | ✅ Done | `backend/main.py`, `backend/routes/*` |
+| Frontend: streaming UI (SSE + Canvas) | ✅ Done | `frontend/index.html`, `app.css`, `app.js` |
+| README + run scripts | ✅ Done | repo root |
+| **Live end-to-end test with a real NIM key** | ⏳ **NEEDS A KEY** | — |
+| V2: Phase-6 synthesis, regen, exports | ❌ Not started | — |
+| V3: Obsidian vault export + history | ❌ Not started | — |
+| V4: portfolio + deployment + Devpost | ❌ Not started | — |
 
-**NEXT TASK → build `backend/main.py` + `backend/routes/forge.py`, then the frontend.**
-See the **"What to build next"** section below — it has copy-pasteable specs.
+**NEXT TASK → add a real NIM key to `.env`, run `run.bat`, type an idea, and
+verify Phase 1 streams + a Canvas card appears.** If that works, V1 is shippable
+and you can move to V2 (see the "What to build next" section).
 
 ---
 
