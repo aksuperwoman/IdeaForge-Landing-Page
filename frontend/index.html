@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IdeaForge — Zero-to-One Execution Engine</title>
+  <meta name="description" content="AI-powered execution intelligence. Turn a vague idea into validated assumptions, risks, milestones, and one real first step.">
+  <link rel="preconnect" href="https://rsms.me/">
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <main class="app">
+    <!-- LEFT: work area -->
+    <section class="work">
+      <div class="top">
+        <div class="brand">
+          <div class="mark">IF</div>
+          <div>
+            <h1>IdeaForge</h1>
+            <div class="subtitle">AI-powered zero-to-one execution engine</div>
+          </div>
+        </div>
+        <button class="btn danger" id="resetBtn" type="button">Reset</button>
+      </div>
+
+      <!-- Hero (only before a session starts) -->
+      <section class="hero" id="hero">
+        <h2>Turn a vague idea into a first real step.</h2>
+        <p>IdeaForge reasons through your idea across five phases — clarifying the job, surfacing hidden assumptions, mapping risks, designing milestones, and recommending one action you can take in 24 hours.</p>
+        <div class="pillars">
+          <span class="pillar">Clarify</span>
+          <span class="pillar">Assume</span>
+          <span class="pillar">Risk</span>
+          <span class="pillar">Milestones</span>
+          <span class="pillar">First Step</span>
+        </div>
+      </section>
+
+      <section class="panel" id="ideaPanel">
+        <div class="label-row">
+          <label for="ideaInput">What idea do you want to execute?</label>
+          <span id="charCount">0 / 600</span>
+        </div>
+        <textarea id="ideaInput" maxlength="600" placeholder="Example: I want to build a peer tutoring marketplace for college students."></textarea>
+        <div class="actions">
+          <span class="muted" id="hint">Runs 5 reasoning phases. The API key stays on the server — you don't need one in the browser.</span>
+          <button class="btn primary" id="startBtn" type="button" disabled>Start Forging</button>
+        </div>
+      </section>
+
+      <nav class="phases" id="phaseNav" aria-label="IdeaForge phases"></nav>
+
+      <section class="panel">
+        <div class="strong">Responsible AI guardrail</div>
+        <div class="muted">IdeaForge shows confidence and uncertainty on every output. It supports decisions — the final judgment always stays with the human.</div>
+      </section>
+
+      <section class="conversation" id="conversation" aria-live="polite"></section>
+
+      <section class="debug-console">
+        <div class="debug-head">
+          <span>Console</span>
+          <button class="btn ghost" id="clearLogBtn" type="button">Clear</button>
+        </div>
+        <div class="debug-log" id="debugLog">Ready. Describe your idea and click Start Forging.</div>
+      </section>
+
+      <section class="follow" id="followRow" style="display:none">
+        <button class="btn primary" id="nextBtn" type="button">Next Phase</button>
+      </section>
+    </section>
+
+    <!-- RIGHT: Execution Canvas -->
+    <aside class="canvas">
+      <div class="canvas-title">
+        <h2>Execution Canvas</h2>
+        <div class="actions-right">
+          <button class="btn" id="copyBtn" type="button">Copy</button>
+          <button class="btn" id="exportBtn" type="button">Export</button>
+        </div>
+      </div>
+      <div class="empty" id="emptyCanvas">Your living execution plan builds here, phase by phase — watch it stream in.</div>
+      <div id="canvasContent"></div>
+    </aside>
+  </main>
+  <div class="toast" id="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>
